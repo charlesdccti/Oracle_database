@@ -284,17 +284,137 @@ END;
 select * from cliente;
 
 
+-- Loop com Cursor (antes)
+
+DECLARE
+    v_id cliente.id%type;
+    v_segmercado_id cliente.segmercado_id%type := 1;
+    CURSOR cur_cliente is SELECT id FROM cliente;
+
+BEGIN
+    OPEN cur_cliente;
+
+    LOOP
+        FETCH cur_cliente into v_id;
+        EXIT WHEN cur_cliente%NOTFOUND;
+        ATUALIZAR_CLI_SEG_MERCADO(v_id, v_segmercado_id);
+    END LOOP;
+
+    CLOSE cur_cliente;
+
+    COMMIT;
+
+END;
+
+
+-- Loop com Cursor 'clean code' (depois)
+
+DECLARE
+    v_segmercado_id cliente.segmercado_id%type := 2;
+    CURSOR cur_cliente is SELECT id FROM cliente;
+
+BEGIN
+
+    FOR cli_rec IN cur_cliente LOOP
+        ATUALIZAR_CLI_SEG_MERCADO(cli_rec.id, v_segmercado_id);
+    END LOOP;
+
+    COMMIT;
+
+END;
+
+Select * from cliente;
+
+
+-- Tratando erros (EXCEPTIONS)
+
+CREATE OR REPLACE PROCEDURE INCLUIR_CLIENTE 
+   (p_id in cliente.id%type,
+    p_razao_social IN cliente.razao_social%type,
+    p_CNPJ cliente.CNPJ%type ,
+    p_segmercado_id IN cliente.segmercado_id%type,
+    p_faturamento_previsto IN cliente.faturamento_previsto%type)
+IS
+    v_categoria cliente.categoria%type;
+    v_CNPJ cliente.cnpj%type := p_CNPJ;
+
+BEGIN
+
+    v_categoria := categoria_cliente(p_faturamento_previsto);
+
+    format_cnpj(v_cnpj);
+
+    INSERT INTO cliente VALUES (p_id, UPPER(p_razao_social), v_CNPJ ,p_segmercado_id, SYSDATE, p_faturamento_previsto, v_categoria);
+    COMMIT;
+
+EXCEPTION
+    WHEN dup_val_on_index then
+        dbms_output.put_line ('Cliente já cadastrado');
+
+END;
+ 
+
+SET SERVEROUTPUT ON
+EXECUTE INCLUIR_CLIENTE(1,'SUPERMERCADO XYZ','12345',2,150000)
 
 
 
 
+CREATE OR REPLACE PROCEDURE INCLUIR_CLIENTE 
+   (p_id in cliente.id%type,
+    p_razao_social IN cliente.razao_social%type,
+    p_CNPJ cliente.CNPJ%type ,
+    p_segmercado_id IN cliente.segmercado_id%type,
+    p_faturamento_previsto IN cliente.faturamento_previsto%type)
+IS
+    v_categoria cliente.categoria%type;
+    v_CNPJ cliente.cnpj%type := p_CNPJ;
+    e_null exception;
+    pragma exception_init (e_null, -1400);
+
+BEGIN
+
+    v_categoria := categoria_cliente(p_faturamento_previsto);
+
+    format_cnpj(v_cnpj);
+
+    INSERT INTO cliente VALUES (p_id, UPPER(p_razao_social), v_CNPJ ,p_segmercado_id, SYSDATE, p_faturamento_previsto, v_categoria);
+    COMMIT;
+
+EXCEPTION
+    WHEN dup_val_on_index then
+        raise_application_error(-20010,'Cliente já cadastrado');
+    WHEN e_null then
+        raise_application_error(-20015,'A coluna ID tem preenchimento obrigatório');
+    WHEN others then
+        raise_application_error(-20020,sqlerrm());
+END;
+
+
+EXECUTE INCLUIR_CLIENTE(NULL,'SUPERMERCADO TYU','65712',2,150000)
 
 
 
+CREATE OR REPLACE PROCEDURE ATUALIZAR_CLI_SEG_MERCADO
+    (p_id IN cliente.id%type,
+     p_segmercado_id IN cliente.segmercado_id%type)
+IS
+    e_cliente_id_inexistente exception;
+BEGIN
+    UPDATE cliente
+        SET segmercado_id = p_segmercado_id
+        WHERE id = p_id;
+    IF SQL%NOTFOUND then
+        RAISE e_cliente_id_inexistente;
+    END IF;
+    COMMIT;
+EXCEPTION
+    WHEN e_cliente_id_inexistente then
+        raise_application_error(-20100,'Cliente inexistente');
+END;
 
 
-
-
+EXECUTE ATUALIZAR_CLI_SEG_MERCADO(10,1)
 
 
 
