@@ -114,6 +114,66 @@ select c.nome, count(a.id) as quantidade from curso c
     join aluno a on a.id = m.aluno_id
 group by c.nome;
 
+-- Conte a quantidade de respostas por exercicios
+
+SELECT e.pergunta, count(r.id) as quantidade from exercicio e
+    join resposta r on r.id = r.exercicio_id
+group by e.pergunta;
+
+
+-- Filtrando agregações e o HAVING - Selecionando a média das notas de um aluno:
+
+select n.nota from nota n;
+
+select a.nome, c.nome, avg(n.nota) as media from nota n
+    join resposta r on r.id = n.resposta_id
+    join exercicio e on e.id = r.exercicio_id
+    join secao s on s.id = e.secao_id
+    join curso c on c.id = s.curso_id
+    join aluno a on a.id = r.aluno_id
+group by a.nome, c.nome
+having avg(n.nota) < 5;
+
+
+
+-- Quantos alunos temos matriculados em cada curso?
+
+select c.nome from curso c
+    join matricula m on m.curso_id = c.id
+    join aluno a on m.aluno_id = a.id;
+    
+
+select count(a.id) as quantidade, c.nome from curso c
+    join matricula m on m.curso_id = c.id  
+    join aluno a on m.aluno_id = a.id
+group by c.nome;
+
+
+select count(a.id) as quantidade, c.nome from curso c
+    join matricula m on m.curso_id = c.id
+    join aluno a on m.aluno_id = a.id
+group by c.nome
+having count(a.id) < 3;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
