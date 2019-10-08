@@ -264,10 +264,120 @@ where c.id in (1,3)
 group by e.pergunta;
 
 
+-- Sub-queries: Comparando a média geral de todos os cursos com a média de cada aluno
+
+select c.nome, n.nota from nota n 
+    join resposta r on r.id = n.resposta_id
+    join exercicio e on e.id = r.exercicio_id
+    join secao s on s.id = e.secao_id
+    join curso c on c.id = s.curso_id;
 
 
+select a.nome, c.nome, avg(n.nota) from nota n 
+    join resposta r on r.id = n.resposta_id
+    join exercicio e on e.id = r.exercicio_id
+    join secao s on s.id = e.secao_id
+    join curso c on c.id = s.curso_id
+    join aluno a on r.aluno_id = a.id
+group by a.nome, c.nome;
 
 
+select avg(n.nota) from nota n;
+
+
+select a.nome, c.nome, avg(n.nota), avg(n.nota) - (select avg(n.nota) from nota n)  from nota n 
+    join resposta r on r.id = n.resposta_id
+    join exercicio e on e.id = r.exercicio_id
+    join secao s on s.id = e.secao_id
+    join curso c on c.id = s.curso_id
+    join aluno a on r.aluno_id = a.id
+group by c.nome, a.nome;
+
+
+-- vamos melhorar os nomes das colunas
+
+select a.nome, c.nome, avg(n.nota) as media, avg(n.nota) - (select avg(n.nota) from nota n) as diferenca from nota n 
+    join resposta r on r.id = n.resposta_id
+    join exercicio e on e.id = r.exercicio_id
+    join secao s on s.id = e.secao_id
+    join curso c on c.id = s.curso_id
+    join aluno a on r.aluno_id = a.id
+group by c.nome, a.nome;
+
+
+-- Quantidade de respostas por aluno, Entao para contar todas as respostas:
+
+select count(r.id) from resposta r;
+
+select a.nome, 
+    (select count(r.id) from resposta r where r.aluno_id = a.id) as respostas 
+from aluno a;
+
+
+-- Quantos cursos cada aluno fez?
+
+select a.nome from aluno a;
+select count(m.id) from matricula m;
+
+select a.nome, 
+    (select count(m.id) from matricula m where m.aluno_id = a.id) as matriculas 
+from aluno a;
+
+
+-- Exiba a média das notas por aluno por curso, além de uma coluna com a diferença entre a média do aluno e a média geral. 
+-- Use sub-queries para isso.
+
+select 
+    a.nome, 
+    c.nome, 
+    avg(n.nota) as media, 
+    avg(n.nota) - (select avg(n.nota) from nota n) as diferenca 
+from nota n
+    join resposta r on r.id = n.resposta_id
+    join exercicio e on e.id = r.exercicio_id
+    join secao s on s.id = e.secao_id
+    join curso c on c.id = s.curso_id
+    join aluno a on a.id = r.aluno_id
+group by c.nome, a.nome;
+
+
+-- Devolva a média de notas no curso por aluno e a diferença para a média geral. 
+-- No entanto, exiba apenas alunos que tiveram alguma matrícula nos últimos 6 meses.
+
+select s.titulo from secao s;
+
+select e.pergunta, e.secao_id from nota n
+    join resposta r on r.id = n.resposta_id
+    join exercicio e on e.id = r.exercicio_id
+    join secao s on s.id = e.secao_id
+    join curso c on c.id = s.curso_id
+    join aluno a on a.id = r.aluno_id;
+
+select sysdate - interval '6' month from dual;
+select aluno_id, data from matricula where data < '08/04/19';
+
+select a.nome, c.nome, avg(n.nota) from nota n 
+    join resposta r on r.id = n.resposta_id
+    join exercicio e on e.id = r.exercicio_id
+    join secao s on s.id = e.secao_id
+    join curso c on c.id = s.curso_id
+    join aluno a on r.aluno_id = a.id
+where a.id in (select aluno_id from matricula where data < (select sysdate - interval '6' month from dual))
+group by a.nome, c.nome;
+
+select 
+    a.nome, 
+    c.nome,
+    avg(n.nota) as media, 
+    avg(n.nota) - (select avg(n.nota) from nota n) as diferenca
+ from nota n
+    join resposta r on r.id = n.resposta_id
+    join exercicio e on e.id = r.exercicio_id
+    join secao s on s.id = e.secao_id
+    join curso c on c.id = s.curso_id
+    join aluno a on a.id = r.aluno_id
+where a.id in (select aluno_id from matricula where data < (select sysdate - interval '6' month from dual))
+group by c.nome, a.nome;
 
 
 
