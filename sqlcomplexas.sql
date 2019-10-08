@@ -380,8 +380,72 @@ where a.id in (select aluno_id from matricula where data < (select sysdate - int
 group by c.nome, a.nome;
 
 
+-- Entendendo o LEFT JOIN: ver quais alunos estão respondendo mais exercícios
+
+select a.nome, count(r.id) as quantidade from aluno a
+    join resposta r on r.aluno_id = a.id
+group by a.nome;
+
+select * from resposta where aluno_id = 4;
 
 
+-- Selecionando também os alunos sem respostas
+
+select a.nome, count(r.id) as quantidade from aluno a
+    join resposta r on r.aluno_id = a.id
+group by a.nome;
 
 
+-- Entendendo o LEFT JOIN
 
+select * from aluno;
+
+select a.nome, count(r.id) as quantidade from aluno a
+    left join resposta r on r.aluno_id = a.id
+group by a.nome;
+
+
+-- Mas e as respostas sem aluno?
+
+select a.nome from aluno a;
+
+
+select a.nome, r.aluno_id from aluno a
+    right join resposta r on r.aluno_id = a.id;
+
+select a.nome, count(r.id) as quantidade from aluno a
+    right join resposta r on r.aluno_id = a.id
+group by a.nome;
+
+
+select * from aluno where id = 50000;
+
+insert into resposta (id, exercicio_id, aluno_id, resposta_dada) 
+    values (28, 1, 50000, 'c# e vb');
+
+
+select a.nome, r.resposta_dada from aluno a
+    right join resposta r on r.aluno_id = a.id;
+
+
+delete from resposta where aluno_id = 50000;
+
+
+-- Exiba todos os alunos e suas possíveis respostas. Exiba todos os alunos, 
+-- mesmo que eles não tenham respondido nenhuma pergunta.
+
+select a.nome, r.resposta_dada from aluno a 
+    left join resposta r on a.id = r.aluno_id;
+
+
+-- Exiba agora todos os alunos e suas possíveis respostas para o exercício com ID = 1. 
+-- Exiba todos os alunos, até os que não responderam o exercício.
+
+select a.nome, r.resposta_dada from aluno a 
+    left join resposta r on a.id = r.aluno_id and r.exercicio_id = 1;
+
+
+-- O LEFT JOIN favorece a tabela à esquerda da relação. 
+-- Ou seja, mesmo se não existirem elementos na tabela da direita relacionados aos elementos da tabela da esquerda, ele os trará.
+
+-- No JOIN, o elemento deve existir em ambas as tabelas da junção.
