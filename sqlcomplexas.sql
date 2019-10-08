@@ -444,8 +444,51 @@ select a.nome, r.resposta_dada from aluno a
 select a.nome, r.resposta_dada from aluno a 
     left join resposta r on a.id = r.aluno_id and r.exercicio_id = 1;
 
+-- Qual a diferença entre o JOIN convencional (muitas vezes chamado também de INNER JOIN) para o LEFT JOIN?
 
 -- O LEFT JOIN favorece a tabela à esquerda da relação. 
 -- Ou seja, mesmo se não existirem elementos na tabela da direita relacionados aos elementos da tabela da esquerda, ele os trará.
-
 -- No JOIN, o elemento deve existir em ambas as tabelas da junção.
+
+
+-- Muitos alunos e o ROWNUM: Exibindo somente os 5 primeiros alunos ordenados por nome
+
+select a.nome from aluno a order by a.nome;
+
+
+select rownum, nome from (select a.nome from aluno a order by a.nome);
+
+select rownum, nome from (select a.nome from aluno a order by a.nome) 
+    where rownum <= 5;
+
+select rownum, nome from (select a.nome from aluno a order by a.nome) 
+    where rownum > 5;
+
+
+select * from (select rownum r, nome from (
+    select a.nome from aluno a order by a.nome
+)) where r > 5;
+
+
+-- Exibindo um intervalo de alunos
+
+select * from (select rownum r, nome from (
+    select a.nome from aluno a order by a.nome) 
+    where rownum <= 10) 
+where r > 5;
+
+
+-- Escreva uma query que ordene os alunos por nome e traga apenas os dois primeiros.
+
+select rownum, nome from 
+    (select a.nome from aluno a order by a.nome) 
+where rownum <= 2;
+
+
+-- Escreva uma SQL que devolva os 3 primeiros alunos que o e-mail termine com o domínio ".com".
+
+select rownum, nome, email from 
+    (select a.nome, a.email from aluno a) 
+where rownum <= 3 and email like '%.com';
+
+
